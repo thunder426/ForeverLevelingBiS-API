@@ -52,7 +52,7 @@ and its weapon setup. Forever has no API for the talent spec, so this is the
 spec the addon scores for.
 
 - `spec`: a spec key from `GetSpecs`, like `"fury"`
-- `setup`: `"twohand"`, `"dualwield"`, `"shield"`, `"held"` or `"onehand"`
+- `setup`: a weapon setup key (see [Weapon setups](#weapon-setups)), like `"dualwield"`
 - `classFile`: like `"WARRIOR"`
 
 ### GetSpecs(classFile) *(v2)*
@@ -90,7 +90,7 @@ those are the weights you get. Otherwise you get the addon's own weights.
 
 | Field | Meaning |
 |---|---|
-| `source` | `"model"` (the addon's leveling model), `"placeholder"`, or the name of the player's profile |
+| `source` | `"model"` (the addon's leveling model), `"placeholder"` (rough starting weights for a spec the model doesn't cover yet; none today), or the name of the player's profile |
 | `profile` | `true` when the weights are a player's profile |
 | `fromLevel`, `toLevel` | the level range these weights cover; they change at other levels |
 
@@ -127,6 +127,36 @@ item is compared with what the player wears.
 
 The **Bag upgrades** switch doesn't affect it.
 
+## Weapon setups
+
+How the player fills their hands. The addon ranks weapons for one setup at a
+time, the one the player picked.
+
+| Key | Hands |
+|---|---|
+| `twohand` | a two-handed weapon |
+| `dualwield` | a one-handed weapon in each hand |
+| `shield` | a one-handed weapon and a shield |
+| `held` | a one-handed weapon and an off-hand item (a shield counts too) |
+| `onehand` | a lone one-handed weapon, when none of the spec's setups takes one (Retribution, or Arms before Dual Wield) |
+
+Each spec's setups, its default first. Setups the character can't use yet at
+its level, like Dual Wield before it's learned or a two-hander before the
+class can wield one, are left out of `GetSpec`'s answer.
+
+| Class | Setups |
+|---|---|
+| WARRIOR | arms: twohand, dualwield · fury: dualwield, twohand · protection: shield |
+| PALADIN | holy: held, twohand · protection: shield · retribution: twohand |
+| HUNTER | every spec: twohand, dualwield |
+| ROGUE | every spec: dualwield |
+| SHAMAN | elemental, restoration: held, twohand · enhancement: twohand, shield |
+| PRIEST, MAGE, WARLOCK, DRUID | every spec: twohand, held |
+
+Only Enhancement has different weights per setup: Windfury Weapon with a
+two-hander, Flametongue Weapon with a shield. For every other spec, and for a
+setup the spec doesn't have, `GetWeights` returns the spec's default weights.
+
 ## Stat keys
 
 Most weights are per point of the stat.
@@ -162,3 +192,7 @@ permission (see LICENSE).
 
 Functions are never removed or changed in ways that break callers. New ones
 raise the version.
+
+New values can appear without a new version: spec keys, weapon setups, stat
+keys and `source` values. Ignore the ones you don't know, or treat them as
+your own default.
